@@ -29,6 +29,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Configuration
+//add informative logs on important steps
 public class UserDao extends AbstractMFlixDao {
     private final MongoCollection<User> usersCollection;
     private final MongoCollection<Session> sessionsCollection;
@@ -58,8 +59,10 @@ public class UserDao extends AbstractMFlixDao {
      */
     public boolean addUser(User user) {
         try {
+            //check if user with email exists and throw exception. Think which one is preferable - checked or unchecked
             usersCollection.withWriteConcern(WriteConcern.MAJORITY).insertOne(user);
         } catch (MongoWriteException e) {
+            //this is write exception , not neccesary exception of user existence. Make generic. Add error logging
             throw new IncorrectDaoOperation("The user is already exists");
         }
 
@@ -74,6 +77,7 @@ public class UserDao extends AbstractMFlixDao {
      * @return true if successful
      */
     public boolean createUserSession(String userId, String jwt) {
+        //check if session with this jwt already exists
         UpdateResult updateResult = writeToMongoDBSafely(
                 () -> sessionsCollection.updateOne(
                         eq(SessionConstants.USER_ID, userId),
@@ -116,10 +120,12 @@ public class UserDao extends AbstractMFlixDao {
      * @return true if user successfully removed
      */
     public boolean deleteUser(String email) {
+        //check if this user exists before you are trying to delete it
         DeleteResult userDeleteResult =
                 writeToMongoDBSafely(() -> usersCollection.deleteOne(eq(UserConstants.EMAIL, email)));
 
         if (userDeleteResult.getDeletedCount() == 0) {
+            //invalid type of exception
             throw new IncorrectDaoOperation("User doesn't exist.");
         }
 
@@ -141,6 +147,7 @@ public class UserDao extends AbstractMFlixDao {
         if (userPreferences == null) {
             throw new IncorrectDaoOperation("userPreferences can't be null");
         }
+        //check if user exists
 
         UpdateResult updateResult = writeToMongoDBSafely(() -> usersCollection.updateOne(
                 eq(UserConstants.EMAIL, email),
