@@ -38,6 +38,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Component
+//add informative logs to important steps where you are trying to change db and error logs
 public class CommentDao extends AbstractMFlixDao {
 
     public static String COMMENT_COLLECTION = "comments";
